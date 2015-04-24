@@ -38,15 +38,23 @@ function update_sysbatt()
     local status, capacity, full, now, draw = get_sysbatt()
     statusd.inform('sysbatt_status', tostring(status))
     statusd.inform('sysbatt_capacity', tostring(capacity))
-    local time
-    if status == 'Charging' then
+
+    local time, hours, mins, left
+    if status == 'Full' or draw == 0 then
+        time = 0
+        left = '-'
+    elseif status == 'Charging' then
         time = (full-now)/draw
     elseif status == 'Discharging' then
         time = now/draw
     end
-    local hours = math.floor(time)
-    local mins = math.floor(((time)-hours)*60)
-    statusd.inform('sysbatt_left', string.format('%dh%02dmin', hours, mins))
+    if time ~= 0 then
+        hours = math.floor(time)
+        mins = math.floor(((time)-hours)*60)
+        left = string.format('%dh%02dmin', hours, mins)
+    end
+
+    statusd.inform('sysbatt_left', left)
 
     sysbatt_timer:set(60000, update_sysbatt)
 end
